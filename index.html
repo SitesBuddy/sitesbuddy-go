@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SitesBuddy</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: #6d7882;
+      font-size: 14px;
+    }
+    .msg { text-align: center; }
+    .msg svg { width: 40px; height: 40px; margin-bottom: 12px; opacity: 0.4; }
+  </style>
+</head>
+<body>
+  <div class="msg">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+    <p>Taking you to SitesBuddy…</p>
+  </div>
+
+  <script>
+    // ─── CONFIG ──────────────────────────────────────────────────────────────
+    const STORE = 'sitesbuddy';           // your LemonSqueezy store subdomain
+    const FALLBACK_URL = 'https://chromewebstore.google.com/detail/sitesbuddy-pro-google-sit/hpfmljjmbdhlakieoeollplpmpgijimi';
+
+    // Map ?ref=name → LemonSqueezy affiliate code
+    // Add a new line here for each affiliate: 'refname': 'LS_CODE'
+    const AFFILIATES = {
+      'john':   'LSCODE1',
+      'jane':   'LSCODE2',
+    };
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const params  = new URLSearchParams(window.location.search);
+    const ref     = (params.get('ref') || '').toLowerCase().trim();
+    const affCode = AFFILIATES[ref];
+
+    if (affCode) {
+      // Track via LemonSqueezy, then redirect in onTrack callback
+      window.lemonSqueezyAffiliateConfig = {
+        store: STORE,
+        trackOnLoad: false,
+        onReady: function(e) {
+          e.Track(affCode);
+        },
+        onTrack: function() {
+          window.location.href = FALLBACK_URL;
+        }
+      };
+
+      const script = document.createElement('script');
+      script.src   = 'https://lmsqueezy.com/affiliate.js';
+      script.defer = true;
+      document.head.appendChild(script);
+
+      // Safety fallback: if script fails or onTrack never fires, redirect after 4s
+      setTimeout(function() {
+        window.location.href = FALLBACK_URL;
+      }, 4000);
+
+    } else {
+      // No ref or unknown ref — go straight to Chrome Store
+      window.location.href = FALLBACK_URL;
+    }
+  </script>
+</body>
+</html>
